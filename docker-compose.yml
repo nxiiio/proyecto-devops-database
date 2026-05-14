@@ -1,0 +1,29 @@
+services:
+  db:
+    image: mysql:8
+    container_name: tienda-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-admin123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-tienda_perritos}
+    volumes:
+      - tienda-dbdata:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      tienda-network:
+        aliases:
+          - db
+          - tienda-db
+
+volumes:
+  tienda-dbdata:
+
+networks:
+  tienda-network:
+    name: ${DOCKER_NETWORK:-tienda-network}
